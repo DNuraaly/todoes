@@ -11,11 +11,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 
 class CategoryController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
+
     public function index(): JsonResponse
     {
         $response_data = Category::all();
