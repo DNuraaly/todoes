@@ -19,6 +19,13 @@ class Category extends Model
         return $this->hasMany(Note::class);
     }
 
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+
+
 //    public function getAddedAtAttribute()
 //    {
 //        return $this->created_at;
