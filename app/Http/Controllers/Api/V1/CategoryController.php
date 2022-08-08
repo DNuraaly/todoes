@@ -2,136 +2,78 @@
 
 namespace App\Http\ Controllers\Api\V1;
 
-
-use App\Models\Category;
 use App\Http\Controllers\Controller;
-use App\Models\User;
+use App\Services\CategoryService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Validation\Rule;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
 class CategoryController extends Controller
 {
-
-    public function index(Request $request): JsonResponse
+    /**
+     * Show all categories
+     * @param Request $request
+     * @param CategoryService $category
+     * @return JsonResponse
+     */
+    public function index(Request $request, CategoryService $category): JsonResponse
     {
-        $user = $request->User();
-//        $response =  Category::where('user_id',$user->id)->get();
-        $categories = $user->categories()->get();
-        return response()->json($categories);
+        $allCategories = $category->getAllCategories($request);
+
+        return response()->json($allCategories);
     }
+
 
     /**
-     * Store a newly created resource in storage.
-     *
-     * @param \App\Http\Requests\StoreCategoryRequest $request
-     * @return Response
+     *  Store a newly created category in storage.
+     * @param Request $request
+     * @param CategoryService $category
+     * @return JsonResponse
      */
-    public function store(Request $request): JsonResponse
+    public function store(Request $request, CategoryService $category): JsonResponse
     {
-        $user = $request->User();
-        $rules = [
-            'title' => [
-                'required',
-                'string',
-                'max:30',
-                Rule::unique('categories','title')
-                    ->where('user_id',$user->id)
-                ]
-        ];
+        $new_category = $category->createCategory($request);
 
-        $validator = Validator::make($request->all(), $rules);
-        if ($validator->fails()) {
-            return response()->json(['messages' => $validator->errors()]);
-        }
-
-        $category = new Category($validator->validate());
-        $category->user()->associate($user);
-        $category->save();
-        return response()->json($category);
+        return response()->json($new_category);
     }
+
+
 
     /**
      * Display the specified resource.
-     *
-     * @param \Illuminate\Http\Request $request
-     * @param  $id
+     * @param Request $request
+     * @param CategoryService $category
+     * @param $id
      * @return JsonResponse
      */
-    public function show(Request $request, $id): JsonResponse
+    public function show(Request $request, CategoryService $category, $id): JsonResponse
     {
-        /**
-         * @var $user User
-         */
-        $user = $request->User();
-        $category = $user->categories()->where('id', $id)->first();
-
-        if (!$category) {
-            return response()->json(['message' => 'Category not found.']);
-        }
-
-        return response()->json($category);
+        return response()->json($category->getCategory($request, $id));
     }
 
     /**
      * Update the specified resource in storage.
      *
-     * @param \App\Http\Requests\UpdateCategoryRequest $request
-     * @param $id
+     * @param Request $request
+     * @param CategoryService $category
+     * @param  $id
      * @return Response
      */
-    public function update(Request $request, $id): JsonResponse
+    public function update(Request $request, CategoryService $category, $id): JsonResponse
     {
-        /**
-         * @var $user User
-         */
-        $user = $request->User();
-        $category = $user->categories()->where('id', $id)->first();
-
-        if (!$category) {
-            return response()->json(['message' => 'category not found.']);
-        }
-
-        $rules = [
-            'title' => [
-                'required',
-                'string',
-                'max:30',
-                Rule::unique('categories', 'title')
-                    ->where('user_id', $user->id)
-                    ->ignore($id),
-            ]
-        ];
-
-        $validator = Validator::make($request->all(), $rules);
-
-        if ($validator->fails()) {
-            return response()->json(['messages' => $validator->errors()]);
-        }
-
-        $category->update($validator->validate());
-        return response()->json($category);
+        return response()->json($category->updateCategory($request, $id));
     }
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param $id
+     * @param Request $request
+     * @param CategoryService $category
+     * @param  $id
      * @return Response
      */
-    public function destroy(Request $request, $id): JsonResponse
+    public function destroy(Request $request, CategoryService $category, $id): JsonResponse
     {
-        $user = $request->User();
-        $category = $user->categories()->find($id);
-
-
-        if (!$category) {
-            return response()->json(['message' => 'category not found. ']);
-        }
-
-        $category->delete();
-        return response()->json(['message' => 'successfully, category deleted.']);
+        return response()->json($category->deleteCategory($request, $id));
     }
 }
