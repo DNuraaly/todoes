@@ -2,12 +2,9 @@
 
 namespace App\Http\ Controllers\Api\V1;
 
-use App\Models\Note;
 use App\Http\Controllers\Controller;
 use App\Services\NoteServices;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Validation\Rule;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
 
@@ -33,32 +30,7 @@ class NoteController extends Controller
      */
     public function store(Request $request, NoteServices $note): JsonResponse
     {
-        $user = $request->User();
-        $rules = [
-            'title' => ['required', 'string', 'max:255'],
-            'description' => ['nullable', 'string'],
-            'category_id' => [
-                'required',
-                'numeric',
-                Rule::exists('categories', 'id')
-                    ->where('user_id', $user->id),
-            ],
-            'due_date' => ['nullable', 'date_format:Y-m-d H:i:s']
-
-        ];
-
-        $validator = Validator::make($request->all(), $rules);
-
-        if ($validator->fails()) {
-            return response()->json(['messages' => $validator->errors()]);
-        }
-
-        $note = new Note($validator->validate());
-        $note->category_id = $request->category_id;
-        $note->user_id = $user->id;
-        $note->save();
-
-        return response()->json($note);
+        return response()->json($note->createNote($request));
     }
 
     /**
