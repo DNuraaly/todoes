@@ -3,77 +3,124 @@
 namespace App\Http\ Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
-use App\Services\CategoryService;
+use App\Http\Requests\StoreCategoryRequest;
+use App\Http\Requests\UpdateCategoryRequest;
+use App\Services\CategoriesService;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
 class CategoryController extends Controller
 {
+    private const MESSAGES = [
+        'notFound' => 'Category not found',
+        'deleted'  => 'Successfully, category deleted'
+    ];
+
     /**
      * Show all categories
      * @param Request $request
-     * @param CategoryService $category
+     * @param CategoriesService $categoryService
      * @return JsonResponse
      */
-    public function index(Request $request, CategoryService $category): JsonResponse
+    public function index(Request $request, CategoriesService $categoryService): JsonResponse
     {
-        $allCategories = $category->getAllCategories($request);
+        $user = $request->user();
 
-        return response()->json($allCategories);
+        return response()->json($categoryService->getAllCategories($user));
     }
-
 
     /**
      *  Store a newly created category in storage.
-     * @param Request $request
-     * @param CategoryService $category
+     * @param StoreCategoryRequest $request
+     * @param CategoriesService $categoriesService
      * @return JsonResponse
      */
-    public function store(Request $request, CategoryService $category): JsonResponse
+    public function store(StoreCategoryRequest $request, CategoriesService $categoriesService): JsonResponse
     {
-        $new_category = $category->createCategory($request);
+        $user = $request->user();
+        $validator = $request->getValidator();
+//        $validated_data = $request->validated();  // or $validator->validated() ??? ask Kubanych
 
-        return response()->json($new_category);
+        if ($validator->fails())
+        {
+            return response()->json(['messages' => $validator->errors()],422);
+        }
+
+        $new_category = $categoriesService->createCategory($validator->validated(),$user);
+
+        return response()->json($new_category, 201);
     }
 
-
-
     /**
-     * Display the specified resource.
+     * Display the specified category.
      * @param Request $request
-     * @param CategoryService $category
+     * @param CategoriesService $categoriesService
      * @param $id
      * @return JsonResponse
      */
-    public function show(Request $request, CategoryService $category, $id): JsonResponse
+    public function show(Request $request, CategoriesService $categoriesService, $id): JsonResponse
     {
-        return response()->json($category->getCategory($request, $id));
+        $user = $request->user();
+        $category = $categoriesService->getCategory($id, $user);
+
+        if (!$category)
+        {
+            return response()->json(['message' => self::MESSAGES['notFound']], 404);
+        }
+
+        return response()->json($category,200);
     }
 
     /**
-     * Update the specified resource in storage.
+     * Update the specified category in storage.
      *
-     * @param Request $request
-     * @param CategoryService $category
+     * @param UpdateCategoryRequest $request
+     * @param CategoriesService $categoriesService
      * @param  $id
-     * @return Response
+     * @return JsonResponse
      */
-    public function update(Request $request, CategoryService $category, $id): JsonResponse
+    public function update(UpdateCategoryRequest $request, CategoriesService $categoriesService, $id): JsonResponse
     {
-        return response()->json($category->updateCategory($request, $id));
+        $user = $request->user();
+        $category = $categoriesService->getCategory($id, $user);
+
+        if (!$category)
+        {
+            return response()->json(['message' => self::MESSAGES['notFound']], 404);
+        }
+
+        $validator = $request->getValidator();
+
+        if ($validator->fails())
+        {
+            return response()->json(['messages' => $validator->errors()],422);
+        }
+
+        $updated_category = $categoriesService->updateCategory($category, $validator->validated());
+
+        return response()->json($updated_category);
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Remove the specified category from storage.
      *
      * @param Request $request
-     * @param CategoryService $category
+     * @param CategoriesService $categoriesService
      * @param  $id
-     * @return Response
+     * @return JsonResponse
      */
-    public function destroy(Request $request, CategoryService $category, $id): JsonResponse
+    public function destroy(Request $request, CategoriesService $categoriesService, $id): JsonResponse
     {
-        return response()->json($category->deleteCategory($request, $id));
+        $user = $request->user();
+        $category = $categoriesService->getCategory($id,$user);
+
+        if (!$category)
+        {
+            return response()->json(['message' => self::MESSAGES['notFound']], 404);
+        }
+
+        $category->delete();
+
+        return response()->json(['message' => self::MESSAGES['deleted']], 200);
     }
 }
