@@ -29,11 +29,6 @@ class CategoriesService
     public function getCategory($id, $user)
     {
         $category = $user->categories()->find($id);
-
-        if (!$category) {
-            return null;
-        }
-
-        return $category;
+        return !$category ? null : $category;
     }
 }

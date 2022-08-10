@@ -45,19 +45,4 @@ class NotesService
 
         return $note;
     }
-
-    public function deleteNote($request, $id)
-    {
-        $user = $request->user();
-        $note = Note::query()->find($id);
-
-        if (!$note || !$user->categories()->where('id',$note->category_id)->exists())
-        {
-            return ['message' => 'Note not found'];
-        }
-
-        $note->delete();
-
-        return ['message' => 'successfully, note deleted.'];
-    }
 }
