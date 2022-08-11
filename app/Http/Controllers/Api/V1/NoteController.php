@@ -37,7 +37,6 @@ class NoteController extends Controller
      */
     public function store(StoreNoteRequest $request, NotesService $notesService): JsonResponse
     {
-        $user = $request->user();
         $validator = $request->getValidator();
 
         if ($validator->fails())
@@ -45,7 +44,7 @@ class NoteController extends Controller
             return response()->json(['messages' => $validator->errors()],422);
         }
 
-        $newNote = $notesService->createNote($validator->validated(), $user);
+        $newNote = $notesService->createNote($validator->validated());
 
         return response()->json($newNote, 201);
     }

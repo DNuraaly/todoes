@@ -3,7 +3,6 @@
 namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
-use App\Models\Category;
 
 class NoteFactory extends Factory
 {
@@ -15,11 +14,10 @@ class NoteFactory extends Factory
     public function definition()
     {
         return [
-            'category_id'=>Category::factory(),
+            'category_id'=> rand(1, 15),
             'title'=> $this->faker->city(),
             'description' => $this->faker->company(),
-            'due_date' => $this->faker->dateTime()
-            //
+            'due_date' => $this->faker->dateTime(),
         ];
     }
 }
