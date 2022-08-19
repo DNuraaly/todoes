@@ -19,9 +19,12 @@ use App\Http\Controllers\Api\V1\NoteController;
 //
 
 
-Route::group(['prefix' => 'v1'], function () {
-    Route::group(['middleware' => 'auth:sanctum'], function () {
-        Route::group(['prefix' => 'categories'], function () {
+Route::group(['prefix' => 'v1'], function ()
+{
+    Route::group(['middleware' => 'auth:sanctum'], function ()
+    {
+        Route::group(['prefix' => 'categories'], function ()
+        {
             Route::get('', [CategoryController::class, 'index']);
             Route::post('', [CategoryController::class, 'store']);
             Route::get('/{category}', [CategoryController::class, 'show']);
@@ -29,7 +32,8 @@ Route::group(['prefix' => 'v1'], function () {
             Route::delete('/{id}', [CategoryController::class, 'destroy']);
         });
 
-        Route::group(['prefix' => 'notes'], function () {
+        Route::group(['prefix' => 'notes'], function ()
+        {
             Route::get('', [NoteController::class, 'index']);
             Route::post('', [NoteController::class, 'store']);
             Route::get('/{note}', [NoteController::class, 'show']);
@@ -38,6 +42,11 @@ Route::group(['prefix' => 'v1'], function () {
         });
         Route::get('logout',[UserController::class, 'logout']);
         Route::get('logout/all',[UserController::class, 'logOutAll']);
+
+        Route::group(['prefix' => 'profile'], function (){
+            Route::get('/',[UserController::class, 'index']);
+            Route::put('/edit',[UserController::class, 'edit']);
+        });
     });
     Route::post('login', [UserController::class, 'login']);
     Route::post('register',[UserController::class, 'createUser']);

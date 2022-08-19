@@ -8,6 +8,7 @@ use Illuminate\Support\Str;
 
 class UserFactory extends Factory
 {
+
     /**
      * Define the model's default state.
      *
@@ -15,11 +16,13 @@ class UserFactory extends Factory
      */
     public function definition()
     {
+        $pass = Hash::make("123");
         return [
             'name' => $this->faker->name(),
             'email' => $this->faker->unique()->safeEmail(),
             'email_verified_at' => now(),
-            'password' => Hash::make("123"), // password
+            'password' => $pass, // password
+            'password_confirmation' => $pass,
             'remember_token' => Str::random(10),
         ];
     }

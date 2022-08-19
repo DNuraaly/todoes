@@ -5,15 +5,19 @@ namespace App\Http\ Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreCategoryRequest;
 use App\Http\Requests\UpdateCategoryRequest;
+use App\Models\Category;
+use App\Models\User;
 use App\Services\CategoriesService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use function PHPUnit\Framework\assertJsonStringNotEqualsJsonString;
 
 class CategoryController extends Controller
 {
     private const MESSAGES = [
         'notFound' => 'Category not found',
-        'deleted'  => 'Successfully, category deleted'
+        'deleted'  => 'Success, category deleted'
     ];
 
     /**
@@ -25,7 +29,6 @@ class CategoryController extends Controller
     public function index(Request $request, CategoriesService $categoryService): JsonResponse
     {
         $user = $request->user();
-
         return response()->json($categoryService->getAllCategories($user));
     }
 
@@ -39,7 +42,6 @@ class CategoryController extends Controller
     {
         $user = $request->user();
         $validator = $request->getValidator();
-//        $validated_data = $request->validated();  // or $validator->validated() ??? ask Kubanych
 
         if ($validator->fails())
         {

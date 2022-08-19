@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use App\Models\Category;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class CategoriesService
 {
@@ -20,15 +22,11 @@ class CategoriesService
         return $category;
     }
 
-    public function updateCategory($category, $data): Category
-    {
-        $category->update($data);
-        return $category;
+    public function updateCategory($category, $data): Category {
+        return $category->update($data);
     }
 
-    public function getCategory($id, $user)
-    {
-        $category = $user->categories()->find($id);
-        return !$category ? null : $category;
+    public function getCategory($id, $user){
+        return $user->categories()->find($id);
     }
 }

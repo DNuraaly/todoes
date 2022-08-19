@@ -11,20 +11,16 @@ class UserService
 {
     public function getUser($data)
     {
-        $user = User::query()->where('email', $data['email'])->first();
-
-        return !$user ? null : $user;
+        return User::query()->where('email', $data['email'])->first();
     }
 
-    public function getUserToken($user,$data)
+    public function generateUserToken($user)
     {
-        $pass_access = Hash::check($data['password'], $user->password);
-
-        return !$pass_access ? null : $user->createToken('user-token-2022')->plainTextToken;
+        return $user->createToken()->plainTextToken;
     }
 
-    public function createUser($userData): User
-    {
+public function createUser($userData): User
+     {
         $user = new User($userData);
         $user->password = Hash::make($userData['password']);
         $user->save();

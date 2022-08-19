@@ -7,6 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class Note extends Model
 {
+    const TABLE = 'notes';
+    protected $table = 'notes';
+
     use HasFactory;
 
     protected $fillable = ['title', 'description', 'due_date'];

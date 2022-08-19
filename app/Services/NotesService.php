@@ -4,15 +4,18 @@
 namespace App\Services;
 
 
+use App\Models\Category;
 use App\Models\Note;
 
 
 class NotesService
 {
-    public function getAllNotes($user): \Illuminate\Database\Eloquent\Collection
+    public function getUserNotes($user): \Illuminate\Database\Eloquent\Collection
     {
-        return Note::query()->whereIn('category_id', $user->categories->pluck('id'))->get();
+        return Note::query()->whereIn('category_id', $user->categories->pluck('id'))->orderBy('id')->get();
+//        return $user->notes()->orderBy('id', 'asc')->get();
     }
+
 
     public function createNote($data): Note
     {
@@ -25,14 +28,13 @@ class NotesService
 
     public function getNote($id, $user)
     {
-        $note = Note::query()->find($id);
-
-        if (!$note || !$user->categories()->where('id', $note->category_id)->exists())
-        {
-            return null;
-        }
-
-        return $note;
+        $categoriesTable = Category::TABLE;
+        $notesTable = Note::TABLE;
+        return Note::query()
+            ->join(Category::TABLE, "$notesTable.category_id", '=', "$categoriesTable.id")
+            ->where("$categoriesTable.user_id", $user->id)
+            ->where("$notesTable.id", $id)
+            ->first();
     }
 
     public function updateNote($note, $data): Note

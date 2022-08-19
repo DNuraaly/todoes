@@ -2,6 +2,7 @@
 
 namespace App\Http\ Controllers\Api\V1;
 
+use App\Http\Controllers\Api\BaseController;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreNoteRequest;
 use App\Http\Requests\UpdateNoteRequest;
@@ -10,8 +11,15 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
 
-class NoteController extends Controller
+class NoteController extends BaseController
 {
+    private $noteService;
+
+    public function __construct(NotesService $notesService)
+    {
+        $this->noteService = $notesService;
+    }
+
     private const MESSAGES = [
         'notFound' => 'Note not found.',
         'deleted'  => 'Successfully, note deleted.'
@@ -22,10 +30,11 @@ class NoteController extends Controller
      * @param NotesService $notesService
      * @return JsonResponse
      */
-    public function index(Request $request, NotesService $notesService): JsonResponse
+    public function index(Request $request): JsonResponse
     {
         $user = $request->user();
-        return response()->json($notesService->getAllNotes($user));
+
+        return response()->json($this->noteService->getUserNotes($user));
     }
 
     /**
@@ -41,7 +50,7 @@ class NoteController extends Controller
 
         if ($validator->fails())
         {
-            return response()->json(['messages' => $validator->errors()],422);
+            return $this->validationError($validator->errors()->first());
         }
 
         $newNote = $notesService->createNote($validator->validated());
@@ -61,12 +70,11 @@ class NoteController extends Controller
         $user = $request->user();
         $note = $notesService->getNote($id, $user);
 
-        if (!$note)
-        {
-            return response()->json(['message' => self::MESSAGES['notFound']],404);
+        if (!$note) {
+            return $this->notFound();
         }
 
-        return response()->json($note, 200);
+        return response()->json($note);
     }
 
     /**
@@ -84,17 +92,17 @@ class NoteController extends Controller
 
         if (!$note)
         {
-            return response()->json(['message' => self::MESSAGES['notFound']],404);
+            return $this->notFound();
         }
 
         $validator = $request->getValidator();
 
         if($validator->fails())
         {
-            return response()->json(['messages' => $validator->errors()], 422);
+            return $this->validationError($validator->errors()->first());
         }
 
-        $updated_note = $notesService->updateNote($note, $validator->validated());
+        $updated_note = $notesService->updateNote($note, $request->validated());
 
         return response()->json($updated_note);
     }
